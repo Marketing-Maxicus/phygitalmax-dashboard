@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhygitalMax Analytics</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#1e293b;min-height:100vh;}
+
+/* TOPBAR */
+.topbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-mark{width:34px;height:34px;background:linear-gradient(135deg,#e65c00,#f59e0b);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:13px;}
+.brand-name{font-size:15px;font-weight:700;color:#1e293b;letter-spacing:-0.3px;}
+.brand-name span{color:#e65c00;}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.live-badge{background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;display:flex;align-items:center;gap:5px;}
+.live-dot{width:6px;height:6px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.updated-text{color:#94a3b8;font-size:11px;}
+
+/* CONTROL BAR */
+.controls{background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ctrl-label{color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;}
+.dd-wrap{position:relative;}
+.dd-btn{display:flex;align-items:center;gap:8px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:7px 13px;color:#334155;font-size:13px;font-weight:500;cursor:pointer;min-width:155px;justify-content:space-between;transition:all 0.15s;}
+.dd-btn:hover,.dd-btn.open{border-color:#e65c00;color:#1e293b;background:#fff;}
+.dd-chevron{width:14px;height:14px;transition:transform 0.2s;color:#94a3b8;}
+.dd-btn.open .dd-chevron{transform:rotate(180deg);color:#e65c00;}
+.dd-menu{position:absolute;top:calc(100% + 5px);left:0;background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;min-width:200px;overflow:hidden;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,0.12);display:none;}
+.dd-menu.show{display:block;}
+.dd-item{padding:9px 14px;font-size:13px;color:#475569;cursor:pointer;transition:all 0.1s;display:flex;align-items:center;justify-content:space-between;}
+.dd-item:hover{background:#f8fafc;color:#1e293b;}
+.dd-item.active{color:#e65c00;background:#fff7f0;}
+.dd-item .ck{width:14px;height:14px;display:none;}
+.dd-item.active .ck{display:block;}
+.dd-divider{height:1px;background:#f1f5f9;margin:3px 0;}
+.custom-row{padding:10px 14px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.custom-row input{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:6px;color:#334155;padding:5px 8px;font-size:11px;width:108px;cursor:pointer;}
+.custom-row input:focus{outline:none;border-color:#e65c00;}
+.apply-btn{background:#e65c00;border:none;border-radius:6px;color:#fff;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:600;}
+.refresh-btn{margin-left:auto;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;color:#475569;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
+.refresh-btn:hover{border-color:#e65c00;color:#e65c00;}
+
+/* PAGE HEADER */
+.pg-header{padding:20px 28px 0;}
+.client-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#e65c00;margin-bottom:4px;}
+.pg-title{font-size:22px;font-weight:800;color:#0f172a;letter-spacing:-0.5px;margin-bottom:3px;}
+.pg-meta{font-size:12px;color:#94a3b8;}
+
+/* MAIN */
+.main{padding:18px 28px 40px;}
+
+/* KPI CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:18px;}
+@media(max-width:1200px){.kpi-row{grid-template-columns:repeat(4,1fr);}}
+.kpi{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);transition:box-shadow 0.2s;}
+.kpi:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+.kpi-top-bar{position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#94a3b8;margin-bottom:8px;}
+.kpi-val{font-size:26px;font-weight:800;color:#0f172a;letter-spacing:-0.5px;line-height:1;}
+.kpi-sub{font-size:10px;color:#94a3b8;margin-top:5px;}
+.kpi-trend{font-size:11px;font-weight:600;margin-top:4px;display:flex;align-items:center;gap:3px;}
+.kpi-trend.up{color:#16a34a;}
+.kpi-trend.dn{color:#dc2626;}
+
+/* LAYOUT */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.row3{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px;}
+@media(max-width:1100px){.row2,.row3{grid-template-columns:1fr;}}
+
+/* CARDS */
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.c-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.c-title{font-size:13px;font-weight:700;color:#0f172a;letter-spacing:-0.2px;}
+.c-badge{background:#f1f5f9;border-radius:6px;font-size:10px;color:#64748b;padding:3px 8px;font-weight:600;}
+
+/* BAR CHART */
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:140px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;}
+.bar-fill{width:100%;border-radius:4px 4px 0 0;min-height:3px;background:linear-gradient(to top,#e65c00,#f59e0b);transition:height 0.5s ease;cursor:default;}
+.bar-fill:hover{opacity:0.8;}
+.bar-lbl{font-size:9px;color:#94a3b8;white-space:nowrap;}
+
+/* TABLES */
+.dtable{width:100%;border-collapse:collapse;font-size:12px;}
+.dtable thead{border-bottom:2px solid #f1f5f9;}
+.dtable th{padding:9px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:#94a3b8;white-space:nowrap;}
+.dtable td{padding:9px 10px;border-bottom:1px solid #f8fafc;color:#475569;vertical-align:middle;font-size:13px;}
+.dtable tbody tr:last-child td{border-bottom:none;}
+.dtable tbody tr:hover td{background:#fafbfc;}
+.dtable td.num{color:#0f172a;font-weight:700;font-variant-numeric:tabular-nums;}
+.dtable td.dc{color:#e65c00;font-weight:700;}
+.dtable td.pg{color:#16a34a;}
+.dtable td.pb{color:#dc2626;}
+.dtable td.pm{color:#d97706;}
+.rank{color:#e65c00;font-weight:800;font-size:12px;min-width:22px;display:inline-block;}
+.purl{color:#334155;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle;}
+
+/* DONUT */
+.donut-wrap{display:flex;gap:16px;align-items:flex-start;}
+.leg-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;font-size:12px;}
+.leg-item:last-child{border-bottom:none;}
+.leg-name{display:flex;align-items:center;gap:7px;color:#475569;}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.leg-val{color:#0f172a;font-weight:700;font-size:12px;}
+
+/* REGION CHART */
+.reg-chart-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f1f5f9;}
+.reg-chart-row:last-child{border-bottom:none;}
+.reg-state-name{font-size:12px;color:#475569;min-width:130px;flex-shrink:0;}
+.reg-bar-wrap{flex:1;height:18px;background:#f8fafc;border-radius:4px;overflow:hidden;position:relative;}
+.reg-bar-fill{height:100%;border-radius:4px;background:linear-gradient(to right,#e65c00,#f59e0b);transition:width 0.6s ease;}
+.reg-bar-label{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;color:#475569;font-weight:600;}
+.reg-count{font-size:12px;font-weight:700;color:#0f172a;min-width:55px;text-align:right;}
+.reg-pct{font-size:11px;color:#94a3b8;min-width:38px;text-align:right;}
+
+/* REGION BARS */
+.rrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9;}
+.rrow:last-child{border-bottom:none;}
+.rn{font-size:12px;color:#475569;min-width:120px;}
+.rbw{flex:1;height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden;}
+.rb{height:100%;background:linear-gradient(to right,#e65c00,#f59e0b);border-radius:3px;transition:width 0.5s;}
+.rv{font-size:11px;color:#0f172a;font-weight:700;min-width:40px;text-align:right;}
+
+/* INSIGHTS */
+.ins-row{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;}
+.ins-row:last-child{border-bottom:none;}
+.ins-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.ins-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#64748b;margin-bottom:3px;}
+.ins-txt{font-size:13px;color:#334155;line-height:1.5;}
+
+/* LOADING */
+.ld-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,0.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+.ld-overlay.show{display:flex;}
+.spinner{width:36px;height:36px;border:3px solid #f1f5f9;border-top-color:#e65c00;border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ld-txt{color:#64748b;font-size:13px;}
+.no-data{text-align:center;color:#94a3b8;padding:24px;font-size:12px;}
+</style>
+</head>
+<body>
+
+<div class="ld-overlay" id="ldOverlay">
+  <div class="spinner"></div>
+  <div class="ld-txt" id="ldText">Loading...</div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">PM</div>
+    <div class="brand-name"><span>Phygital</span>Max Analytics</div>
+  </div>
+  <div class="topbar-right">
+    <span class="updated-text" id="updatedText">--</span>
+    <div class="live-badge"><div class="live-dot"></div>Live</div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <span class="ctrl-label">Client</span>
+  <div class="dd-wrap" id="cWrap">
+    <button class="dd-btn" id="cBtn" onclick="toggleDD('c')">
+      <span id="cLbl">Philips</span>
+      <svg class="dd-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="dd-menu" id="cMenu">
+      <div class="dd-item active" onclick="selClient('Philips',this)">Philips<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="#e65c00" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="dd-item" onclick="selClient('Lenovo',this)">Lenovo<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="#e65c00" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="dd-item" onclick="selClient('Wonderchef',this)">Wonderchef<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="#e65c00" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="dd-item" onclick="selClient('Atomberg',this)">Atomberg<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="#e65c00" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="dd-item" onclick="selClient('Orient',this)">Orient<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="#e65c00" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+    </div>
+  </div>
+
+  <span class="ctrl-label" style="margin-left:8px;">Period</span>
+  <div class="dd-wrap" id="dWrap">
+    <button class="dd-btn" id="dBtn" onclick="toggleDD('d')">
+      <span id="dLbl">Last 7 Days</span>
+      <svg class="dd-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="dd-menu" id="dMenu" style="min-width:220px;">
+      <div class="dd-item" onclick="setFilter(1,'Today',this)">Today<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="#e65c00" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="dd-item active" onclick="setFilter(7,'Last 7 Days',this)">Last 7 Days<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="#e65c00" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="dd-item" onclick="setFilter(15,'Last 15 Days',this)">Last 15 Days<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="#e65c00" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="dd-item" onclick="setFilter(30,'Monthly (30 Days)',this)">Monthly (30 Days)<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="#e65c00" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="dd-item" onclick="setFilter(60,'Last 2 Months',this)">Last 2 Months<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="#e65c00" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="dd-divider"></div>
+      <div class="custom-row">
+        <input type="date" id="cs">
+        <span style="color:#94a3b8;font-size:11px;">to</span>
+        <input type="date" id="ce">
+        <button class="apply-btn" onclick="applyCustom()">Apply</button>
+      </div>
+    </div>
+  </div>
+  <button class="refresh-btn" id="refBtn" onclick="doRefresh()">&#8635; Refresh</button>
+</div>
+
+<!-- PAGE HEADER -->
+<div class="pg-header">
+  <div class="client-tag" id="cTag">Philips</div>
+  <div class="pg-title">GA4 Performance Dashboard</div>
+  <div class="pg-meta" id="pgMeta">Last 7 Days &nbsp;&bull;&nbsp; Google Analytics 4</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="c-header"><div class="c-title">Sessions Over Time</div><div class="c-badge" id="chartBadge">7 Days</div></div>
+      <div class="bar-chart" id="barChart"></div>
+    </div>
+    <div class="card">
+      <div class="c-header"><div class="c-title">Traffic Acquisition</div><div class="c-badge">By Channel</div></div>
+      <div id="trafficPanel"></div>
+    </div>
+  </div>
+
+  <div class="row2" style="grid-template-columns:1fr 1fr;">
+    <div class="card">
+      <div class="c-header"><div class="c-title">Region Performance</div><div class="c-badge">Top 10 States</div></div>
+      <div id="regionChart"></div>
+    </div>
+    <div class="card">
+      <div class="c-header"><div class="c-title">Top States</div><div class="c-badge">By Users</div></div>
+      <div id="regionList"></div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="card">
+      <div class="c-header"><div class="c-title">Top Landing Pages</div><div class="c-badge">Entry Points</div></div>
+      <div style="overflow-x:auto;" id="landingTbl"></div>
+    </div>
+    <div class="card">
+      <div class="c-header"><div class="c-title">Performance Insights</div><div class="c-badge">Auto Analysis</div></div>
+      <div id="insPanel"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="c-header"><div class="c-title">Daily Breakdown</div><div class="c-badge" id="tblBadge">7 Days</div></div>
+    <div style="overflow-x:auto;" id="ovTbl"></div>
+  </div>
+</div>
+
+<script>
+
+var RAW_DATA = {"Philips":{"property_id":"532663103","data":{"overview":[["20260416",["1","1","1","0","14.075996","1","0"]],["20260417",["9","12","0.66666666666666663","0.33333333333333331","868.05752225","40","0"]],["20260418",["4","7","0.42857142857142855","0.5714285714285714","770.4907057142857","37","0"]],["20260420",["29","36","0.63888888888888884","0.3611111111111111","279.29750877777781","125","0"]],["20260421",["72","75","0.21333333333333335","0.78666666666666663","54.767560560000007","113","0"]],["20260422",["97","100","0.15","0.85","25.024538240000002","112","0"]],["20260423",["474","489","0.18609406952965235","0.81390593047034765","39.015007486707567","585","0"]],["20260424",["1480","1543","0.19701879455605961","0.80298120544394036","43.110353537265063","1883","0"]],["20260425",["1698","1779","0.19617762788083193","0.80382237211916807","100.11910973130972","2179","0"]],["20260426",["1693","1771","0.20553359683794467","0.7944664031620553","49.832333254093726","2155","0"]],["20260427",["1015","1058","0.20888468809073724","0.79111531190926276","41.898850017013231","1278","0"]]],"traffic":[["Paid Search",["6016","5628","0.18567154255319149","0"]],["Paid Social",["415","392","0.14698795180722893","0"]],["Cross-network",["176","177","0.59090909090909094","0"]],["Referral",["162","128","0.46913580246913578","0"]],["Direct",["90","75","0.3888888888888889","0"]],["Unassigned",["18","18","0","0"]],["Organic Search",["1","1","0","0"]]],"region":[["Uttar Pradesh",["1898","2025","2492"]],["Madhya Pradesh",["1673","1777","2150"]],["Rajasthan",["515","555","649"]],["Odisha",["455","483","584"]],["Gujarat",["445","471","578"]],["Maharashtra",["398","420","521"]],["Delhi Division",["156","181","256"]],["West Bengal",["151","161","203"]],["Karnataka",["122","127","146"]],["Punjab",["92","99","138"]],["Tamil Nadu",["80","89","112"]],["Haryana",["68","94","226"]],["Bihar",["61","71","81"]],["Telangana",["60","65","80"]],["Kerala",["41","44","50"]],["Chhattisgarh",["35","35","43"]],["Ropar Division",["34","35","49"]],["Uttarakhand",["24","25","27"]],["Andhra Pradesh",["23","24","28"]],["California",["12","12","12"]],["New York",["9","9","9"]],["(not set)",["7","7","6"]],["Assam",["7","7","9"]],["Himachal Pradesh",["4","4","4"]],["Jammu and Kashmir",["4","4","5"]],["Ohio",["4","4","4"]],["Oregon",["4","4","4"]],["Tripura",["4","4","5"]],["Florida",["3","3","3"]],["Goa",["3","3","5"]],["New Jersey",["3","3","3"]],["North Carolina",["3","3","3"]],["North Holland",["3","3","3"]],["Tennessee",["2","2","2"]],["Texas",["2","2","2"]],["Alabama",["1","1","1"]],["Colorado",["1","1","1"]],["England",["1","1","5"]],["Jharkhand",["1","1","1"]],["Kansas",["1","1","1"]],["Louisiana",["1","1","1"]],["Nebraska",["1","1","1"]],["Norrbotten County",["1","1","1"]],["Puducherry",["1","1","1"]],["Sharjah",["1","1","1"]],["Washington",["1","1","1"]],["Wyoming",["1","1","1"]]],"landing":[["/philips-800-watt",["3512","3296","0.79271070615034167","0"]],["/philips-mixer-grinder-1000w",["3211","3067","0.805668016194332","0"]],["(not set)",["47","44","0.97872340425531912","0"]],["/philips-juicer-mixer-grinder",["31","29","0.61290322580645162","0"]],["/philips",["11","10","0.18181818181818182","0"]],["/direct-join/philips-800-watt",["8","8","0.75","0"]],["/customer-feedback",["6","4","0.5","0"]],["/meeting/domesticappliancesphilips-u1WcNcbNIhfQ",["4","3","0.75","0"]],["/meeting/domesticappliancesphilips-zgyK4oawCX03",["4","3","0.75","0"]],["/meeting/domesticappliancesphilips-Fh17A2CU1ccM",["3","3","0.66666666666666663","0"]]],"error":null}},"Lenovo":{"property_id":"520846523","data":{"overview":[["20260329",["1007","1015","0.045320197044334973","0.954679802955665","6.9775725310344825","1044","0"]],["20260330",["606","609","0.049261083743842367","0.95073891625615758","7.2188649047619053","630","0"]],["20260331",["79","84","0.22619047619047619","0.77380952380952384","110.60959197619047","113","0"]],["20260401",["19","21","0.2857142857142857","0.7142857142857143","106.39630657142855","19","0"]],["20260402",["17","18","0.5","0.5","87.16561322222222","23","0"]],["20260403",["21","22","0.27272727272727271","0.72727272727272729","5.6749789545454545","21","0"]],["20260404",["18","19","0.31578947368421051","0.68421052631578949","19.12458757894737","18","0"]],["20260405",["18","18","0.55555555555555558","0.44444444444444442","21.653782388888889","18","0"]],["20260406",["21","23","0.52173913043478259","0.47826086956521741","153.92124860869566","34","0"]],["20260407",["43","49","0.40816326530612246","0.59183673469387754","85.34445753061226","50","0"]],["20260408",["29","33","0.33333333333333331","0.66666666666666663","106.15052284848485","46","0"]],["20260409",["21","21","0.42857142857142855","0.5714285714285714","97.8332311904762","24","0"]],["20260410",["18","19","0.57894736842105265","0.42105263157894735","227.92865957894739","29","0"]],["20260411",["31","32","0.375","0.625","27.419069718750002","35","0"]],["20260412",["26","27","0.29629629629629628","0.70370370370370372","68.871325296296291","27","0"]],["20260413",["23","27","0.40740740740740738","0.59259259259259256","138.54057944444443","49","0"]],["20260414",["33","37","0.29729729729729731","0.70270270270270274","156.14642159459461","38","0"]],["20260415",["20","23","0.65217391304347827","0.34782608695652173","144.05508286956521","37","0"]],["20260416",["17","17","0.47058823529411764","0.52941176470588236","16.94626594117647","17","0"]],["20260417",["32","34","0.52941176470588236","0.47058823529411764","278.2506635","55","0"]],["20260418",["31","32","0.40625","0.59375","56.10659484375","41","0"]],["20260419",["28","28","0.32142857142857145","0.6785714285714286","153.60296760714286","31","0"]],["20260420",["21","22","0.54545454545454541","0.45454545454545453","246.46464631818182","38","0"]],["20260421",["29","32","0.40625","0.59375","106.63430528125001","35","0"]],["20260422",["30","32","0.40625","0.59375","77.2633885","34","0"]],["20260423",["48","48","0.41666666666666669","0.58333333333333337","49.754650520833337","70","0"]],["20260424",["35","39","0.30769230769230771","0.69230769230769229","76.4825551025641","45","0"]],["20260425",["37","38","0.28947368421052633","0.71052631578947367","79.365697657894728","40","0"]],["20260426",["25","25","0.32","0.68","90.12263176","39","0"]],["20260427",["25","27","0.037037037037037035","0.96296296296296291","76.129935925925921","46","0"]]],"traffic":[["Paid Social",["1210","1202","0.028925619834710745","0"]],["Direct",["1112","1035","0.26798561151079137","0"]],["Referral",["90","78","0.44444444444444442","0"]],["Organic Social",["38","36","0.23684210526315788","0"]],["Organic Search",["15","1","0.4","0"]],["Unassigned",["12","11","0","0"]]],"region":[["Maharashtra",["339","353","362"]],["Uttar Pradesh",["208","211","246"]],["Karnataka",["207","213","223"]],["Gujarat",["181","185","194"]],["Telangana",["165","167","169"]],["Madhya Pradesh",["163","165","171"]],["Tamil Nadu",["163","172","177"]],["Delhi Division",["147","155","182"]],["Bihar",["143","146","149"]],["Rajasthan",["130","137","153"]],["Haryana",["92","123","247"]],["West Bengal",["87","89","100"]],["Kerala",["51","55","61"]],["Punjab",["49","52","66"]],["Andhra Pradesh",["31","37","34"]],["(not set)",["29","29","32"]],["Massachusetts",["25","25","25"]],["Chhattisgarh",["23","23","23"]],["Odisha",["23","23","23"]],["Jammu and Kashmir",["9","9","10"]],["Jharkhand",["9","11","10"]],["Ropar Division",["8","8","8"]],["Himachal Pradesh",["7","7","7"]],["Uttarakhand",["7","8","9"]],["Assam",["6","6","6"]],["New York",["6","6","6"]],["California",["5","5","5"]],["England",["5","5","5"]],["Goa",["4","4","4"]],["Missouri",["4","4","4"]],["Meghalaya",["3","3","3"]],["Florida",["2","2","2"]],["Jakarta",["2","2","2"]],["Muscat Governorate",["2","2","2"]],["Oregon",["2","2","2"]],["Riyadh Province",["2","2","2"]],["Tripura",["2","2","2"]],["Arizona",["1","1","1"]],["Bavaria",["1","1","1"]],["British Columbia",["1","1","1"]],["Colorado",["1","1","1"]],["Dadra and Nagar Haveli and Daman and Diu",["1","1","1"]],["Delaware",["1","1","1"]],["Illinois",["1","2","1"]],["Lazio",["1","1","1"]],["Manipur",["1","1","1"]],["Mexico City",["1","1","1"]],["Mizoram",["1","1","1"]],["New Hampshire",["1","1","1"]],["North Holland",["1","1","1"]],["Ohio",["1","1","1"]],["Ontario",["1","1","1"]],["Puducherry",["1","1","1"]],["Sharjah",["1","1","1"]],["South Dakota",["1","1","1"]],["Virginia",["1","1","1"]],["Wyoming",["1","1","1"]]],"landing":[["/lenovo",["1729","1702","0.93580104106419892","0"]],["/lenovo-loq-gen10",["303","296","0.60726072607260728","0"]],["/yoga-slim-7i-aura-edition",["112","109","0.5535714285714286","0"]],["/thinkpad-x1-carbon-aura-edition",["110","100","0.57272727272727275","0"]],["/thinkpad-x9-aura-edition",["61","55","0.65573770491803274","0"]],["(not set)",["44","37","0.95454545454545459","0"]],["/legion-tower-5",["43","43","0.58139534883720934","0"]],["/thinkpad-x1-2-in-1-aura-edition",["23","21","0.60869565217391308","0"]],["",["12","11","1","0"]],["/direct-join/thinkpad-x9-aura-edition",["7","7","1","0"]]],"error":null}},"Wonderchef":{"property_id":"521720276","data":{"overview":[["20260329",["43","47","0.19148936170212766","0.80851063829787229","64.736482808510644","60","0"]],["20260330",["61","65","0.36923076923076925","0.63076923076923075","113.93930290769231","102","0"]],["20260331",["60","62","0.38709677419354838","0.61290322580645162","168.16121561290322","114","0"]],["20260401",["65","65","0.36923076923076925","0.63076923076923075","139.87081970769231","92","0"]],["20260402",["61","69","0.3188405797101449","0.6811594202898551","101.64280298550725","86","0"]],["20260403",["51","54","0.42592592592592593","0.57407407407407407","111.89726074074075","77","0"]],["20260404",["60","65","0.4","0.6","69.256524707692307","126","0"]],["20260405",["46","48","0.39583333333333331","0.60416666666666663","170.84877072916666","92","0"]],["20260406",["58","62","0.30645161290322581","0.69354838709677424","88.798042774193547","82","0"]],["20260407",["51","51","0.37254901960784315","0.62745098039215685","51.392774764705884","77","0"]],["20260408",["52","53","0.26415094339622641","0.73584905660377353","58.550440490566039","80","0"]],["20260409",["55","58","0.32758620689655171","0.67241379310344829","54.820713258620692","81","0"]],["20260410",["50","51","0.29411764705882354","0.70588235294117652","66.391308098039218","67","0"]],["20260411",["43","47","0.25531914893617019","0.74468085106382975","104.42549448936171","59","0"]],["20260412",["53","56","0.42857142857142855","0.5714285714285714","118.80647192857143","89","0"]],["20260413",["53","53","0.32075471698113206","0.67924528301886788","37.358559622641508","75","0"]],["20260414",["56","62","0.41935483870967744","0.58064516129032262","124.02825658064516","104","0"]],["20260415",["80","85","0.38823529411764707","0.611764705882353","123.72698118823529","139","0"]],["20260416",["53","60","0.36666666666666664","0.6333333333333333","156.27790336666666","83","0"]],["20260417",["73","75","0.36","0.64","130.00036128","119","0"]],["20260418",["86","88","0.43181818181818182","0.56818181818181823","108.1401723409091","162","0"]],["20260419",["75","76","0.40789473684210525","0.59210526315789469","54.103220776315787","118","0"]],["20260420",["84","88","0.30681818181818182","0.69318181818181823","95.563503352272718","127","0"]],["20260421",["97","104","0.33653846153846156","0.66346153846153844","69.361773557692317","136","0"]],["20260422",["92","94","0.31914893617021278","0.68085106382978722","184.54447831914896","134","0"]],["20260423",["77","77","0.37662337662337664","0.62337662337662336","61.406886454545464","109","0"]],["20260424",["82","87","0.39080459770114945","0.60919540229885061","108.30678911494252","122","0"]],["20260425",["59","63","0.42857142857142855","0.5714285714285714","64.017262190476188","102","0"]],["20260426",["73","73","0.28767123287671231","0.71232876712328763","135.93106956164382","104","0"]],["20260427",["94","95","0.010526315789473684","0.98947368421052628","95.493586231578931","130","0"]]],"traffic":[["Direct",["1243","1152","0.29766693483507645","0"]],["Referral",["777","696","0.41055341055341055","0"]],["Unassigned",["50","50","0","0"]],["Organic Social",["2","2","0.5","0"]]],"region":[["Maharashtra",["310","346","553"]],["Uttar Pradesh",["128","142","214"]],["Delhi Division",["126","135","185"]],["Tamil Nadu",["116","125","183"]],["Gujarat",["115","137","211"]],["Karnataka",["95","106","171"]],["New York",["92","92","92"]],["Telangana",["77","83","123"]],["California",["74","75","75"]],["Haryana",["73","83","184"]],["Kerala",["66","72","111"]],["Punjab",["65","72","112"]],["West Bengal",["64","68","97"]],["Rajasthan",["55","58","87"]],["Madhya Pradesh",["48","57","97"]],["Bihar",["45","46","76"]],["Andhra Pradesh",["30","33","53"]],["Jammu and Kashmir",["26","28","54"]],["Odisha",["22","26","40"]],["Assam",["21","23","39"]],["Uttarakhand",["18","19","35"]],["Jharkhand",["15","18","26"]],["(not set)",["13","13","19"]],["Wyoming",["12","12","12"]],["Florida",["11","11","11"]],["Texas",["9","9","9"]],["Himachal Pradesh",["8","8","8"]],["Tripura",["8","8","8"]],["Ohio",["7","7","7"]],["Illinois",["6","6","6"]],["Chhattisgarh",["5","5","5"]],["Meghalaya",["5","5","5"]],["Ropar Division",["5","5","5"]],["England",["4","5","6"]],["Nagaland Division",["4","4","8"]],["Oregon",["4","4","4"]],["South Dakota",["4","4","4"]],["Washington",["4","4","4"]],["Connecticut",["3","3","3"]],["Goa",["3","3","3"]],["Iowa",["3","3","3"]],["Manipur",["3","3","5"]],["Mizoram",["3","8","7"]],["New South Wales",["3","3","4"]],["Ontario",["3","3","3"]],["Pennsylvania",["3","3","3"]],["Puducherry",["3","7","10"]],["Tennessee",["3","3","3"]],["Virginia",["3","3","3"]],["Alabama",["2","2","2"]],["Arizona",["2","2","2"]],["Colorado",["2","2","2"]],["Dadra and Nagar Haveli and Daman and Diu",["2","3","2"]],["Dubai",["2","2","2"]],["Georgia",["2","2","2"]],["Indiana",["2","2","2"]],["Maryland",["2","2","2"]],["Massachusetts",["2","2","2"]],["Minnesota",["2","2","2"]],["Nebraska",["2","2","2"]],["Victoria",["2","2","16"]],["Wisconsin",["2","2","2"]],["Abu Dhabi",["1","1","1"]],["Andaman and Nicobar Islands",["1","1","1"]],["Buskerud",["1","1","1"]],["Gauteng",["1","1","1"]],["Idaho",["1","1","1"]],["Kansas",["1","1","1"]],["Lombardy",["1","2","5"]],["Michigan",["1","1","1"]],["Montana",["1","1","1"]],["Norrbotten County",["1","1","1"]],["North Carolina",["1","1","1"]],["Oklahoma",["1","1","1"]],["Pwani Region",["1","1","4"]],["South Carolina",["1","1","1"]],["Utah",["1","1","1"]]],"landing":[["/chai-magic",["1326","1232","0.62971342383107087","0"]],["/air-fryer",["206","191","0.47572815533980584","0"]],["/soup-maker",["77","72","0.7142857142857143","0"]],["",["45","44","1","0"]],["/regenta-espresso-coffee-machine-19-bar",["29","28","0.58620689655172409","0"]],["(not set)",["26","23","0.96153846153846156","0"]],["/meeting/wonderchef-CqLekzVYSZoA",["11","1","0.81818181818181823","0"]],["/direct-join/air-fryer",["8","8","0.875","0"]],["/direct-join/chai-magic",["8","8","0","0"]],["/customer-feedback",["7","7","0.42857142857142855","0"]]],"error":null}},"Atomberg":{"property_id":"524284836","data":{"overview":[["20260329",["650","673","0.35512630014858843","0.64487369985141163","130.34197775037148","1137","0"]],["20260330",["678","707","0.3606789250353607","0.6393210749646393","192.81411769165487","1118","0"]],["20260331",["897","930","0.29677419354838708","0.70322580645161292","78.49781332150539","1361","0"]],["20260401",["797","828","0.31642512077294688","0.68357487922705318","144.20809629227054","1353","0"]],["20260402",["938","994","0.36720321931589539","0.63279678068410461","136.50046010764586","1667","0"]],["20260403",["993","1043","0.34228187919463088","0.65771812080536918","112.90396651869608","1623","0"]],["20260404",["866","906","0.3443708609271523","0.6556291390728477","132.45727938741723","1468","0"]],["20260405",["876","916","0.31004366812227074","0.68995633187772931","87.279909055676839","1394","0"]],["20260406",["863","896","0.3627232142857143","0.6372767857142857","117.24596082924107","1352","0"]],["20260407",["987","1034","0.316247582205029","0.683752417794971","103.80271900193424","1662","0"]],["20260408",["917","968","0.381198347107438","0.618801652892562","124.63163372727271","1636","0"]],["20260409",["968","1016","0.34055118110236221","0.65944881889763785","120.31625391240158","1718","0"]],["20260410",["669","721","0.37309292649098474","0.62690707350901531","162.477680778086","1191","0"]],["20260411",["637","667","0.37031484257871067","0.62968515742128939","133.84251945877062","1069","0"]],["20260412",["683","706","0.36543909348441928","0.63456090651558072","105.87480818838524","1134","0"]],["20260413",["636","682","0.36510263929618769","0.63489736070381231","130.00394819061583","1157","0"]],["20260414",["589","621","0.39774557165861513","0.60225442834138487","166.68788225925925","1000","0"]],["20260415",["640","663","0.36651583710407237","0.63348416289592757","118.7957082383107","1051","0"]],["20260416",["617","657","0.39421613394216132","0.60578386605783863","136.91232376864536","1098","0"]],["20260417",["704","748","0.36764705882352944","0.63235294117647056","121.84062504411764","1259","0"]],["20260418",["685","727","0.38239339752407153","0.61760660247592847","145.14696185557082","1287","0"]],["20260419",["613","639","0.36619718309859156","0.63380281690140849","145.10000096087637","1045","0"]],["20260420",["583","621","0.35265700483091789","0.64734299516908211","131.1564867568438","1071","0"]],["20260421",["634","663","0.34539969834087481","0.65460030165912519","131.9421530980392","1131","0"]],["20260422",["581","608","0.38815789473684209","0.61184210526315785","124.45726348519737","1027","0"]],["20260423",["538","565","0.3345132743362832","0.6654867256637168","113.70450117345133","912","0"]],["20260424",["601","636","0.36163522012578614","0.63836477987421381","115.92894716194969","1083","0"]],["20260425",["576","604","0.34271523178807944","0.6572847682119205","111.82077797516557","1005","0"]],["20260426",["646","688","0.35319767441860467","0.64680232558139539","126.83265234447673","1188","0"]],["20260427",["587","633","0.02843601895734597","0.97156398104265407","242.24187560821483","1007","0"]]],"traffic":[["Referral",["13160","11694","0.39878419452887537","0"]],["Paid Social",["4322","3993","0.21772327626099028","0"]],["Direct",["3779","3273","0.32839375496163004","0"]],["Unassigned",["1191","1110","0.14273719563392107","0"]],["Email",["296","264","0.34797297297297297","0"]],["Paid Search",["262","215","0.5419847328244275","0"]],["Organic Social",["29","27","0.2413793103448276","0"]],["Organic Search",["8","5","0.75","0"]],["Paid Shopping",["7","7","0.5714285714285714","0"]],["Cross-network",["2","2","0","0"]]],"region":[["Maharashtra",["3804","4303","7223"]],["Karnataka",["2121","2422","3913"]],["Telangana",["1519","1737","2924"]],["Gujarat",["1405","1613","2866"]],["Tamil Nadu",["1379","1567","2504"]],["Uttar Pradesh",["1359","1490","2459"]],["Delhi Division",["1059","1165","2177"]],["West Bengal",["888","964","1503"]],["Kerala",["843","918","1398"]],["New York",["537","537","537"]],["Andhra Pradesh",["528","600","1086"]],["Rajasthan",["526","575","1039"]],["Bihar",["515","549","821"]],["Madhya Pradesh",["493","557","941"]],["Haryana",["475","574","1421"]],["California",["422","425","428"]],["Punjab",["338","368","585"]],["Odisha",["301","330","596"]],["(not set)",["190","199","306"]],["Assam",["155","163","237"]],["Jharkhand",["120","130","191"]],["Jammu and Kashmir",["116","126","236"]],["Wyoming",["99","99","99"]],["Chhattisgarh",["85","93","139"]],["Goa",["76","82","141"]],["Florida",["73","73","75"]],["Texas",["71","72","77"]],["Uttarakhand",["69","70","113"]],["Colorado",["50","50","54"]],["Himachal Pradesh",["49","55","77"]],["Ropar Division",["43","51","87"]],["Illinois",["37","37","37"]],["Oregon",["36","36","36"]],["Virginia",["34","34","34"]],["South Dakota",["33","33","33"]],["Nebraska",["30","30","30"]],["Pennsylvania",["30","30","30"]],["Ohio",["29","29","29"]],["Massachusetts",["23","23","22"]],["Dubai",["22","25","47"]],["Iowa",["20","20","20"]],["Abu Dhabi",["18","18","27"]],["Maryland",["18","18","18"]],["Georgia",["17","17","17"]],["North Carolina",["16","15","16"]],["England",["15","21","29"]],["Arizona",["14","14","14"]],["County Dublin",["14","15","14"]],["Tripura",["14","19","27"]],["Wisconsin",["14","14","14"]],["Dadra and Nagar Haveli and Daman and Diu",["13","15","27"]],["Indiana",["13","13","13"]],["Missouri",["13","13","13"]],["Sharjah",["13","13","14"]],["Alabama",["12","12","11"]],["Kansas",["12","12","12"]],["Puducherry",["12","15","25"]],["Tennessee",["11","11","11"]],["New Jersey",["10","10","11"]],["Hawalli Governorate",["9","9","11"]],["Minnesota",["9","9","12"]],["Mizoram",["9","9","9"]],["Washington",["9","9","9"]],["Montana",["8","8","8"]],["Riyadh Province",["8","8","9"]],["Makkah Province",["7","7","9"]],["South Carolina",["7","7","7"]],["District of Columbia",["6","6","6"]],["New Hampshire",["6","6","6"]],["Ontario",["6","7","11"]],["",["5","5","4"]],["Doha Municipality",["5","6","6"]],["Kentucky",["5","5","5"]],["Andaman and Nicobar Islands",["4","4","4"]],["Arunachal Pradesh",["4","4","4"]],["Connecticut",["4","4","4"]],["Hawaii",["4","4","4"]],["Idaho",["4","4","4"]],["Louisiana",["4","4","4"]],["Meghalaya",["4","4","4"]],["Nevada",["4","4","4"]],["North Holland",["4","4","6"]],["Victoria",["4","4","4"]],["Bavaria",["3","3","3"]],["British Columbia",["3","3","5"]],["Capital Governorate",["3","4","4"]],["Madrid",["3","3","3"]],["Michigan",["3","3","3"]],["Muscat Governorate",["3","3","10"]],["New South Wales",["3","3","3"]],["Norrbotten County",["3","3","3"]],["North Rhine-Westphalia",["3","3","7"]],["Utah",["3","3","3"]],["Western Province",["3","4","12"]],["Akershus",["2","2","2"]],["Al Madinah Province",["2","2","2"]],["Chittagong Division",["2","2","3"]],["Chukha",["2","2","2"]],["Federal Territory of Kuala Lumpur",["2","2","3"]],["Ile-de-France",["2","2","2"]],["Manipur",["2","2","2"]],["West Virginia",["2","2","2"]],["Adjara",["1","1","1"]],["Ajman",["1","1","1"]],["Al Jahra Governorate",["1","1","1"]],["Al Rayyan Municipality",["1","1","1"]],["Al Wakra Municipality",["1","1","1"]],["Alberta",["1","1","1"]],["Andalusia",["1","1","1"]],["Arkansas",["1","1","1"]],["Auckland",["1","1","4"]],["Bagmati Province",["1","1","1"]],["Banten",["1","1","4"]],["Basra Governorate",["1","1","1"]],["Bishkek City",["1","1","3"]],["Brasov",["1","1","3"]],["Bucharest",["1","1","3"]],["Campania",["1","1","1"]],["Canterbury Region",["1","1","1"]],["Central Equatoria",["1","1","1"]],["Central Java",["1","1","1"]],["Chiang Mai",["1","1","1"]],["County Cork",["1","1","1"]],["Delhi",["1","1","1"]],["Dhaka Division",["1","1","1"]],["Eastern Province",["1","1","1"]],["Emirate of Umm Al Quwain",["1","1","3"]],["Federal Capital Territory",["1","1","1"]],["Greater Accra Region",["1","1","1"]],["Guangdong Province",["1","1","1"]],["Hauts-de-France",["1","1","1"]],["Hessen",["1","3","15"]],["Ho Chi Minh City",["1","1","1"]],["Jonkoping County",["1","1","1"]],["Kanchanaburi",["1","1","1"]],["Kigali City",["1","1","1"]],["Lower Saxony",["1","2","3"]],["Lusaka Province",["1","1","1"]],["Maine",["1","1","1"]],["Male",["1","2","1"]],["Nagaland Division",["1","1","1"]],["Northern Borders Province",["1","2","1"]],["Occitanie",["1","1","1"]],["Oslo",["1","1","3"]],["Pembroke Parish",["1","1","1"]],["Port Louis District",["1","1","1"]],["Quebec",["1","1","1"]],["Rajshahi Division",["1","1","1"]],["Rhode Island",["1","1","1"]],["Sicily",["1","1","1"]],["Sindh",["1","1","1"]],["South Holland",["1","2","1"]],["Southwest Finland",["1","1","1"]],["State of Santa Catarina",["1","1","1"]],["Tangier-Tetouan-Al Hoceima",["1","1","1"]],["Tokyo",["1","1","1"]],["Vermont",["1","1","1"]],["Wales",["1","1","3"]],["Western Australia",["1","1","1"]],["Zurich",["1","1","1"]]],"landing":[["/intellon-water-purifier",["10448","9462","0.63993108728943338","0"]],["/mixer-grinder",["5514","5152","0.67120058034095031","0"]],["/smart-locks",["2059","1912","0.63671685284118507","0"]],["/althea-cold-press-juicer",["1030","956","0.58932038834951461","0"]],["",["300","286","1","0"]],["(not set)",["255","246","0.96862745098039216","0"]],["/customer-feedback",["250","214","0.56","0"]],["/live/intellon-water-purifier",["46","46","0.69565217391304346","0"]],["/training",["41","22","0.17073170731707318","0"]],["/live/mixer-grinder",["26","26","0.80769230769230771","0"]]],"error":null}},"Orient":{"property_id":"532586962","data":{"overview":[["20260416",["62","62","0.22580645161290322","0.77419354838709675","33.969042532258065","87","0"]],["20260417",["70","76","0.34210526315789475","0.65789473684210531","38.725418552631574","83","0"]],["20260418",["106","111","0.35135135135135137","0.64864864864864868","87.961149","144","0"]],["20260419",["78","81","0.345679012345679","0.654320987654321","96.71873707407407","111","0"]],["20260420",["87","93","0.35483870967741937","0.64516129032258063","98.1240367311828","124","0"]],["20260421",["79","81","0.37037037037037035","0.62962962962962965","87.4204257654321","109","0"]],["20260422",["178","190","0.3","0.7","64.762655815789472","232","0"]],["20260423",["146","155","0.37419354838709679","0.62580645161290327","74.288747025806458","217","0"]],["20260424",["250","261","0.421455938697318","0.578544061302682","62.052666758620688","335","0"]],["20260425",["220","229","0.38427947598253276","0.61572052401746724","78.26706727510917","297","0"]],["20260426",["255","261","0.38697318007662834","0.6130268199233716","50.077368988505754","395","0"]],["20260427",["159","172","0.029069767441860465","0.97093023255813948","149.61128181976744","234","0"]]],"traffic":[["Referral",["1335","1220","0.38052434456928841","0"]],["Direct",["422","392","0.1872037914691943","0"]],["Unassigned",["91","88","0","0"]]],"region":[["Maharashtra",["243","276","381"]],["Karnataka",["190","215","305"]],["Delhi Division",["154","161","221"]],["Tamil Nadu",["109","116","151"]],["Telangana",["99","110","150"]],["Gujarat",["87","96","142"]],["California",["86","86","85"]],["West Bengal",["80","83","104"]],["Uttar Pradesh",["75","80","123"]],["New York",["62","62","62"]],["Haryana",["51","55","83"]],["Bihar",["36","40","46"]],["Punjab",["29","31","46"]],["Andhra Pradesh",["27","31","46"]],["Kerala",["24","25","28"]],["Rajasthan",["24","24","28"]],["Florida",["20","20","20"]],["Odisha",["17","18","24"]],["Madhya Pradesh",["15","16","28"]],["Wyoming",["14","14","14"]],["(not set)",["13","13","14"]],["Colorado",["13","13","13"]],["Ropar Division",["12","14","18"]],["Illinois",["9","9","9"]],["Chhattisgarh",["8","10","12"]],["Ohio",["8","8","8"]],["Texas",["8","8","8"]],["Jammu and Kashmir",["7","7","13"]],["Oregon",["7","7","7"]],["Virginia",["7","7","7"]],["Assam",["6","6","5"]],["Pennsylvania",["6","6","6"]],["Indiana",["5","5","5"]],["New Jersey",["5","5","5"]],["Tennessee",["5","5","5"]],["Uttarakhand",["5","5","5"]],["",["4","5","6"]],["Alabama",["4","4","4"]],["Georgia",["4","4","4"]],["Himachal Pradesh",["4","4","4"]],["Jharkhand",["4","14","55"]],["Tripura",["4","5","10"]],["Washington",["4","4","4"]],["Connecticut",["3","3","3"]],["Dubai",["3","3","2"]],["England",["3","3","3"]],["Goa",["3","3","3"]],["Nebraska",["3","3","3"]],["Bagmati Province",["2","2","2"]],["Hawaii",["2","2","2"]],["Hawalli Governorate",["2","2","2"]],["Maryland",["2","2","2"]],["Massachusetts",["2","2","2"]],["Meghalaya",["2","2","2"]],["Missouri",["2","2","2"]],["Mizoram",["2","2","7"]],["Montana",["2","2","2"]],["Al Wahat District",["1","2","1"]],["Alaska",["1","1","1"]],["County Dublin",["1","1","1"]],["Dadra and Nagar Haveli and Daman and Diu",["1","1","1"]],["Fujairah",["1","1","3"]],["Iowa",["1","1","1"]],["Jesenice",["1","1","1"]],["Louisiana",["1","1","1"]],["Michigan",["1","1","1"]],["Muscat Governorate",["1","2","1"]],["North Rhine-Westphalia",["1","1","3"]],["Riyadh Province",["1","1","1"]],["Victoria",["1","1","1"]]],"landing":[["/aero-o2",["1296","1236","0.6103395061728395","0"]],["",["87","84","1","0"]],["(not set)",["39","38","0.97435897435897434","0"]],["/direct-join/aero-o2",["7","7","0.14285714285714285","0"]],["/live/aero-o2",["7","7","0.8571428571428571","0"]],["/customer-feedback",["5","5","0.8","0"]],["/meeting/orientelectric-tcLGFnfZC7Lg",["5","4","0.6","0"]],["/meeting/orientelectric-yhcnhkcF2cuW",["5","3","0.6","0"]],["/meeting/orientelectric-24vUSVxzUikk",["4","3","0.75","0"]],["/meeting/orientelectric-4L79t9V4dz2A",["4","3","0.5","0"]]],"error":null}}};
+var CC='Philips', CD=7, CL='Last 7 Days';
+
+var STATE_IDS = {
+  "Andhra Pradesh":"AP","Arunachal Pradesh":"AR","Assam":"AS","Bihar":"BR",
+  "Chhattisgarh":"CG","Goa":"GA","Gujarat":"GJ","Haryana":"HR",
+  "Himachal Pradesh":"HP","Jharkhand":"JH","Karnataka":"KA","Kerala":"KL",
+  "Madhya Pradesh":"MP","Maharashtra":"MH","Manipur":"MN","Meghalaya":"ME",
+  "Mizoram":"MZ","Nagaland":"NL","Odisha":"OD","Punjab":"PB",
+  "Rajasthan":"RJ","Sikkim":"SK","Tamil Nadu":"TN","Telangana":"TL",
+  "Tripura":"TR","Uttar Pradesh":"UP","Uttarakhand":"UK","West Bengal":"WB",
+  "Delhi Division":"DL","Delhi":"DL","Jammu and Kashmir":"JK","Ladakh":"LA",
+  "Puducherry":"PY","Chandigarh":"CH"
+};
+
+var CH_COLORS={
+  'Paid Search':'#e65c00','Paid Social':'#7c3aed','Organic Search':'#16a34a',
+  'Direct':'#2563eb','Referral':'#dc2626','Cross-network':'#0891b2',
+  'Unassigned':'#94a3b8','Organic Social':'#db2777','Email':'#059669','Organic Video':'#d97706'
+};
+function cc(n){return CH_COLORS[n]||'#94a3b8';}
+function fmt(v){return parseInt(v).toLocaleString();}
+function pct(v){return (parseFloat(v)*100).toFixed(1)+'%';}
+function dur(v){var s=parseFloat(v);return Math.floor(s/60)+'m '+Math.floor(s%60)+'s';}
+function fd(d){return d.slice(6,8)+'/'+d.slice(4,6)+'/'+d.slice(0,4);}
+
+function stateColor(val,max){
+  if(!val||max===0)return '#e2e8f0';
+  var r=val/max;
+  if(r>0.8)return '#b91c1c';
+  if(r>0.6)return '#dc2626';
+  if(r>0.4)return '#f97316';
+  if(r>0.2)return '#fb923c';
+  if(r>0.05)return '#fed7aa';
+  return '#ffedd5';
+}
+
+function filterRows(rows,days){
+  if(!rows||!rows.length)return[];
+  return rows.slice().sort(function(a,b){return b[0].localeCompare(a[0]);}).slice(0,days).reverse();
+}
+
+function getData(){
+  var cd=RAW_DATA[CC];
+  if(!cd)return null;
+  var d=cd.data;
+  return{ov:filterRows(d.overview,CD),tr:d.traffic,rg:d.region,lp:d.landing};
+}
+
+function renderKPIs(d){
+  var ov=d.ov;
+  if(!ov||!ov.length){document.getElementById('kpiRow').innerHTML='<div class="no-data">No data</div>';return;}
+  var tu=0,ts=0,se=0,sb=0,sd=0,tp=0,tc=0;
+  ov.forEach(function(r){tu+=parseInt(r[1][0]);ts+=parseInt(r[1][1]);se+=parseFloat(r[1][2]);sb+=parseFloat(r[1][3]);sd+=parseFloat(r[1][4]);tp+=parseInt(r[1][5]);tc+=parseInt(r[1][6]||0);});
+  var ae=se/ov.length,ab=sb/ov.length,ad=sd/ov.length;
+  var ut='',st='';
+  if(ov.length>=2){
+    var u1=parseInt(ov[ov.length-1][1][0]),u2=parseInt(ov[ov.length-2][1][0]);
+    var s1=parseInt(ov[ov.length-1][1][1]),s2=parseInt(ov[ov.length-2][1][1]);
+    if(u2>0){var du=((u1-u2)/u2*100);ut='<div class="kpi-trend '+(du>=0?'up':'dn')+'">'+(du>=0?'&#9650;':'&#9660;')+' '+Math.abs(du).toFixed(1)+'% vs prev</div>';}
+    if(s2>0){var ds=((s1-s2)/s2*100);st='<div class="kpi-trend '+(ds>=0?'up':'dn')+'">'+(ds>=0?'&#9650;':'&#9660;')+' '+Math.abs(ds).toFixed(1)+'% vs prev</div>';}
+  }
+  var kpis=[
+    {l:'Total Users',v:fmt(tu),s:'Unique visitors',a:'#e65c00',t:ut},
+    {l:'Sessions',v:fmt(ts),s:'All visits',a:'#2563eb',t:st},
+    {l:'Engagement Rate',v:(ae*100).toFixed(1)+'%',s:'Engaged sessions',a:'#16a34a',t:''},
+    {l:'Bounce Rate',v:(ab*100).toFixed(1)+'%',s:'Single-page visits',a:'#d97706',t:''},
+    {l:'Avg Duration',v:dur(ad),s:'Per session',a:'#7c3aed',t:''},
+    {l:'Pageviews',v:fmt(tp),s:'Total pages viewed',a:'#0891b2',t:''},
+    {l:'Conversions',v:fmt(tc),s:'Goal completions',a:'#dc2626',t:''}
+  ];
+  document.getElementById('kpiRow').innerHTML=kpis.map(function(k){
+    return '<div class="kpi"><div class="kpi-top-bar" style="background:'+k.a+';"></div>'+
+      '<div class="kpi-lbl">'+k.l+'</div>'+
+      '<div class="kpi-val">'+k.v+'</div>'+
+      '<div class="kpi-sub">'+k.s+'</div>'+k.t+'</div>';
+  }).join('');
+}
+
+function renderChart(d){
+  var ov=d.ov;
+  if(!ov||!ov.length){document.getElementById('barChart').innerHTML='<div class="no-data">No data</div>';return;}
+  var max=Math.max.apply(null,ov.map(function(r){return parseInt(r[1][1]);}));
+  document.getElementById('chartBadge').textContent=CL;
+  document.getElementById('barChart').innerHTML=ov.map(function(r){
+    var s=parseInt(r[1][1]),h=max>0?Math.max(3,(s/max)*130):3;
+    return '<div class="bar-col" title="'+fd(r[0])+': '+fmt(s)+' sessions">'+
+      '<div class="bar-fill" style="height:'+h+'px;"></div>'+
+      '<div class="bar-lbl">'+r[0].slice(6,8)+'/'+r[0].slice(4,6)+'</div></div>';
+  }).join('');
+}
+
+function renderTraffic(d){
+  var tr=d.tr;
+  if(!tr||!tr.length){document.getElementById('trafficPanel').innerHTML='<div class="no-data">No data</div>';return;}
+  var sorted=tr.slice().sort(function(a,b){return parseInt(b[1][0])-parseInt(a[1][0]);});
+  var total=sorted.reduce(function(s,r){return s+parseInt(r[1][0]);},0);
+  var cumA=-90,slices='',legend='';
+  sorted.forEach(function(row){
+    var val=parseInt(row[1][0]),angle=(val/total)*360;
+    if(angle<1)return;
+    var sR=(cumA*Math.PI)/180,eR=((cumA+angle)*Math.PI)/180;
+    var cx=65,cy=65,r=52,ri=30;
+    var x1=cx+r*Math.cos(sR),y1=cy+r*Math.sin(sR),x2=cx+r*Math.cos(eR),y2=cy+r*Math.sin(eR);
+    var xi1=cx+ri*Math.cos(sR),yi1=cy+ri*Math.sin(sR),xi2=cx+ri*Math.cos(eR),yi2=cy+ri*Math.sin(eR);
+    var lg=angle>180?1:0,color=cc(row[0]);
+    slices+='<path d="M '+x1+' '+y1+' A '+r+' '+r+' 0 '+lg+' 1 '+x2+' '+y2+' L '+xi2+' '+yi2+' A '+ri+' '+ri+' 0 '+lg+' 0 '+xi1+' '+yi1+' Z" fill="'+color+'" stroke="#fff" stroke-width="1.5"/>';
+    legend+='<div class="leg-item"><div class="leg-name"><div class="leg-dot" style="background:'+color+';"></div>'+row[0]+'</div>'+
+      '<div class="leg-val">'+fmt(val)+' <span style="color:#94a3b8;font-size:10px;">'+(val/total*100).toFixed(0)+'%</span></div></div>';
+    cumA+=angle;
+  });
+  document.getElementById('trafficPanel').innerHTML=
+    '<div class="donut-wrap">'+
+    '<svg width="130" height="130" viewBox="0 0 130 130" style="flex-shrink:0;">'+slices+
+    '<circle cx="65" cy="65" r="24" fill="#fff"/>'+
+    '<text x="65" y="62" text-anchor="middle" fill="#0f172a" font-size="10" font-weight="800">'+fmt(total)+'</text>'+
+    '<text x="65" y="73" text-anchor="middle" fill="#94a3b8" font-size="9">sessions</text></svg>'+
+    '<div style="flex:1;overflow-y:auto;max-height:160px;">'+legend+'</div></div>';
+}
+
+function renderMap(d){
+  var reg=d.rg||[];
+  var totU=reg.reduce(function(s,r){return s+parseInt(r[1][0]);},0);
+  var top10=reg.slice(0,10);
+  var maxU=top10.length>0?parseInt(top10[0][1][0]):1;
+
+  // Horizontal bar chart for top 10 states
+  if(!top10.length){
+    document.getElementById('regionChart').innerHTML='<div class="no-data">No regional data</div>';
+  } else {
+    document.getElementById('regionChart').innerHTML=top10.map(function(r){
+      var u=parseInt(r[1][0]);
+      var w=maxU>0?Math.max(4,(u/maxU)*100):4;
+      var p=totU>0?(u/totU*100).toFixed(1)+'%':'0%';
+      return '<div class="reg-chart-row">'+
+        '<div class="reg-state-name">'+r[0]+'</div>'+
+        '<div class="reg-bar-wrap">'+
+          '<div class="reg-bar-fill" style="width:'+w+'%;"></div>'+
+        '</div>'+
+        '<div class="reg-count">'+fmt(u)+'</div>'+
+        '<div class="reg-pct">'+p+'</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  // Top states summary list
+  var top8=reg.slice(0,8);
+  document.getElementById('regionList').innerHTML=top8.map(function(r){
+    var u=parseInt(r[1][0]);
+    var w=maxU>0?Math.max(2,(u/maxU)*100):2;
+    return '<div class="rrow"><div class="rn">'+r[0]+'</div>'+
+      '<div class="rbw"><div class="rb" style="width:'+w+'%;"></div></div>'+
+      '<div class="rv">'+fmt(u)+'</div></div>';
+  }).join('');
+}
+
+
+function renderLanding(d){
+  var lp=d.lp||[];
+  if(!lp.length){document.getElementById('landingTbl').innerHTML='<div class="no-data">No data</div>';return;}
+  document.getElementById('landingTbl').innerHTML=
+    '<table class="dtable"><thead><tr><th>#</th><th>Landing Page</th><th>Sessions</th><th>Users</th><th>Bounce</th><th>Engagement</th><th>Duration</th><th>Conversions</th></tr></thead><tbody>'+
+    lp.slice(0,10).map(function(r,i){
+      var pg=r[0].length>38?r[0].slice(0,38)+'...':r[0];
+      var bc=parseFloat(r[1][2])>0.7?'pb':(parseFloat(r[1][2])>0.5?'pm':'pg');
+      return '<tr><td><span class="rank">'+(i+1)+'</span></td>'+
+        '<td><span class="purl" title="'+r[0]+'">'+pg+'</span></td>'+
+        '<td class="num">'+fmt(r[1][0])+'</td><td class="num">'+fmt(r[1][1])+'</td>'+
+        '<td class="'+bc+'">'+pct(r[1][2])+'</td><td class="pg">'+pct(r[1][3])+'</td>'+
+        '<td>'+dur(r[1][4])+'</td><td class="num">'+fmt(r[1][5])+'</td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+function renderTable(d){
+  var ov=d.ov;
+  if(!ov||!ov.length){document.getElementById('ovTbl').innerHTML='<div class="no-data">No data</div>';return;}
+  document.getElementById('tblBadge').textContent=CL;
+  document.getElementById('ovTbl').innerHTML=
+    '<table class="dtable"><thead><tr><th>Date</th><th>Users</th><th>Sessions</th><th>Engagement</th><th>Bounce</th><th>Avg Duration</th><th>Pageviews</th></tr></thead><tbody>'+
+    ov.slice().reverse().map(function(r){
+      var bc=parseFloat(r[1][3])>0.7?'pb':'pm';
+      return '<tr><td class="dc">'+fd(r[0])+'</td>'+
+        '<td class="num">'+fmt(r[1][0])+'</td><td class="num">'+fmt(r[1][1])+'</td>'+
+        '<td class="pg">'+pct(r[1][2])+'</td><td class="'+bc+'">'+pct(r[1][3])+'</td>'+
+        '<td>'+dur(r[1][4])+'</td><td class="num">'+fmt(r[1][5])+'</td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+function renderInsights(d){
+  var ov=d.ov,tr=d.tr,rg=d.rg;
+  if(!ov||!ov.length){document.getElementById('insPanel').innerHTML='<div class="no-data">No data</div>';return;}
+  var tu=0,ts=0,se=0,sb=0,sd=0;
+  ov.forEach(function(r){tu+=parseInt(r[1][0]);ts+=parseInt(r[1][1]);se+=parseFloat(r[1][2]);sb+=parseFloat(r[1][3]);sd+=parseFloat(r[1][4]);});
+  var ae=se/ov.length,ab=sb/ov.length,ad=sd/ov.length;
+  var trend='Stable',tc='#2563eb',totRU=rg?rg.reduce(function(s,r){return s+parseInt(r[1][0]);},0):1;
+  if(ov.length>=4){
+    var half=Math.floor(ov.length/2),rc=0,ro=0;
+    ov.slice(-half).forEach(function(r){rc+=parseInt(r[1][1]);});
+    ov.slice(0,half).forEach(function(r){ro+=parseInt(r[1][1]);});
+    rc=rc/half;ro=ro/half;
+    if(rc>ro*1.1){trend='Growing +'+((rc/ro-1)*100).toFixed(0)+'%';tc='#16a34a';}
+    else if(rc<ro*0.9){trend='Declining -'+((1-rc/ro)*100).toFixed(0)+'%';tc='#dc2626';}
+  }
+  var topCh=tr&&tr.length?tr.slice().sort(function(a,b){return parseInt(b[1][0])-parseInt(a[1][0]);})[0][0]:'N/A';
+  var topReg=rg&&rg.length?rg[0][0]:'N/A';
+  var topRegPct=rg&&rg.length&&totRU>0?(parseInt(rg[0][1][0])/totRU*100).toFixed(1)+'%':'N/A';
+  var ins=[
+    {c:'#e65c00',l:'Traffic Trend',t:'Traffic is <strong style="color:'+tc+'">'+trend+'</strong> this period. Total <strong>'+fmt(tu)+'</strong> users across <strong>'+fmt(ts)+'</strong> sessions.'},
+    {c:'#7c3aed',l:'Top Channel',t:'<strong>'+topCh+'</strong> is the dominant acquisition channel. Consider diversifying for better resilience.'},
+    {c:'#16a34a',l:'Top Region',t:'<strong>'+topReg+'</strong> accounts for <strong>'+topRegPct+'</strong> of all users. Strong regional concentration observed.'},
+    {c:'#d97706',l:'Engagement',t:'Avg engagement <strong>'+(ae*100).toFixed(1)+'%</strong>, duration <strong>'+dur(ad)+'</strong>, bounce rate <strong>'+(ab*100).toFixed(1)+'%</strong>.'+(ab>0.7?' High bounce detected.':' Engagement is healthy.')},
+    {c:'#dc2626',l:'Recommendation',t:ab>0.7?'Optimize landing page UX to reduce high bounce rate. Run targeted campaigns in <strong>'+topReg+'</strong>.':'Scale <strong>'+topCh+'</strong> spend and expand regional reach beyond <strong>'+topReg+'</strong>.'}
+  ];
+  document.getElementById('insPanel').innerHTML=ins.map(function(i){
+    return '<div class="ins-row"><div class="ins-dot" style="background:'+i.c+';margin-top:5px;"></div>'+
+      '<div><div class="ins-lbl" style="color:'+i.c+';">'+i.l+'</div><div class="ins-txt">'+i.t+'</div></div></div>';
+  }).join('');
+}
+
+function renderAll(){
+  var d=getData();if(!d)return;
+  document.getElementById('cTag').textContent=CC;
+  document.getElementById('pgMeta').innerHTML=CL+' &bull; Google Analytics 4'+(d.ov.length>0?' &bull; '+fd(d.ov[0][0])+' to '+fd(d.ov[d.ov.length-1][0]):'');
+  renderKPIs(d);renderChart(d);renderTraffic(d);renderMap(d);renderLanding(d);renderTable(d);renderInsights(d);
+  document.getElementById('updatedText').textContent='Updated: '+new Date().toLocaleString();
+}
+
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#cWrap'))closeDD('c');
+  if(!e.target.closest('#dWrap'))closeDD('d');
+});
+function toggleDD(w){
+  var m=document.getElementById(w==='c'?'cMenu':'dMenu'),b=document.getElementById(w==='c'?'cBtn':'dBtn');
+  var open=m.classList.contains('show');
+  closeDD('c');closeDD('d');
+  if(!open){m.classList.add('show');b.classList.add('open');}
+}
+function closeDD(w){
+  document.getElementById(w==='c'?'cMenu':'dMenu').classList.remove('show');
+  document.getElementById(w==='c'?'cBtn':'dBtn').classList.remove('open');
+}
+function selClient(name,el){
+  CC=name;document.getElementById('cLbl').textContent=name;
+  document.querySelectorAll('#cMenu .dd-item').forEach(function(i){i.classList.remove('active');});
+  el.classList.add('active');closeDD('c');renderAll();
+}
+function setFilter(days,label,el){
+  CD=parseInt(days);CL=label;
+  document.getElementById('dLbl').textContent=label;
+  document.querySelectorAll('#dMenu .dd-item').forEach(function(i){i.classList.remove('active');});
+  el.classList.add('active');closeDD('d');renderAll();
+}
+function applyCustom(){
+  var s=document.getElementById('cs').value,e=document.getElementById('ce').value;
+  if(!s||!e)return;
+  CD=Math.round((new Date(e)-new Date(s))/86400000)+1;
+  CL=s+' to '+e;
+  document.getElementById('dLbl').textContent=CL;
+  document.querySelectorAll('#dMenu .dd-item').forEach(function(i){i.classList.remove('active');});
+  closeDD('d');renderAll();
+}
+function doRefresh(){
+  var ol=document.getElementById('ldOverlay'),lt=document.getElementById('ldText'),btn=document.getElementById('refBtn');
+  ol.classList.add('show');lt.textContent='Refreshing '+CC+'...';btn.disabled=true;
+  setTimeout(function(){ol.classList.remove('show');btn.disabled=false;renderAll();},1200);
+}
+var td=new Date(),wa=new Date();wa.setDate(td.getDate()-7);
+document.getElementById('ce').value=td.toISOString().split('T')[0];
+document.getElementById('cs').value=wa.toISOString().split('T')[0];
+renderAll();
+</script>
+</body>
+</html>
