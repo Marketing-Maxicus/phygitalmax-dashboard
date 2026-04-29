@@ -107,6 +107,14 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#1e293b;mi
 .ins-txt{font-size:13px;color:#334155;line-height:1.5;}
 .lp-sub{font-size:10px;color:#94a3b8;margin-top:3px;}
 .lp-sub span{display:inline-block;margin-right:8px;}
+.lp-row td{background:#fafbfc !important;}
+.lp-row:hover td{background:#f8fafc !important;}
+.lp-toggle{
+  cursor:pointer;color:#e65c00;font-size:10px;font-weight:600;
+  background:#fff7f0;border:1px solid #fed7aa;border-radius:4px;
+  padding:2px 7px;margin-left:6px;user-select:none;display:inline-block;
+}
+.lp-toggle:hover{background:#fff;border-color:#e65c00;}
 .ld-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,0.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
 .ld-overlay.show{display:flex;}
 .spinner{width:36px;height:36px;border:3px solid #f1f5f9;border-top-color:#e65c00;border-radius:50%;animation:spin 0.7s linear infinite;}
@@ -343,13 +351,13 @@ function renderAll(){
 
   var tr_agg = aggTrafficWt(trd);
   var rg_agg = aggRegion(rgd);
-  var lp_agg = aggLanding(lpd);
+  var lpAgg = aggLanding(lpd);
 
   renderKPIs(ov);
   renderChart(ov);
   renderTraffic(tr_agg);
   renderRegion(rg_agg);
-  renderLanding(lp_agg);
+  renderLanding(lpAgg);
   renderTable(ov, lpd);
   renderInsights(ov, tr_agg, rg_agg);
   document.getElementById('updatedText').textContent='Updated: '+new Date().toLocaleString();
@@ -467,55 +475,101 @@ function renderLanding(lp){
 }
 
 function renderTable(ov, lpd){
-  document.getElementById('tblBadge').textContent=CL;
-  if(!ov||!ov.length){document.getElementById('ovTbl').innerHTML='<div class="no-data">No data</div>';return;}
+  document.getElementById('tblBadge').textContent = CL;
+  if(!ov || !ov.length){
+    document.getElementById('ovTbl').innerHTML = '<div class="no-data">No data</div>';
+    return;
+  }
 
-  // Build landing page map per date: {date: [{page, sessions, users}...]}
-  var lpByDate={};
+  // Build per-date landing page lookup
+  var lpByDate = {};
   lpd.forEach(function(r){
-    var date=r[0],pg=r[1],sess=parseFloat(r[2][0]),users=parseFloat(r[2][1]);
-    if(!lpByDate[date]) lpByDate[date]=[];
-    lpByDate[date].push({pg:pg,sess:sess,users:users});
+    var date = r[0], pg = r[1], sess = parseFloat(r[2][0]), users = parseFloat(r[2][1]);
+    if(!lpByDate[date]) lpByDate[date] = [];
+    lpByDate[date].push({pg: pg, sess: sess, users: users});
   });
-  // Sort each date's pages by sessions desc, keep top 5
   Object.keys(lpByDate).forEach(function(date){
-    lpByDate[date].sort(function(a,b){return b.sess-a.sess;});
-    lpByDate[date]=lpByDate[date].slice(0,5);
+    lpByDate[date].sort(function(a,b){ return b.sess - a.sess; });
+    lpByDate[date] = lpByDate[date].slice(0, 6);
   });
 
-  var rows = ov.slice().reverse().map(function(r){
-    var date=r[0];
-    var bc=parseFloat(r[1][3])>0.7?'pb':'pm';
-    var lpCell='';
-    if(lpByDate[date]&&lpByDate[date].length){
-      lpCell=lpByDate[date].map(function(lp){
-        var pgShort=lp.pg.length>35?lp.pg.slice(0,35)+'...':lp.pg;
-        return '<div class="lp-sub" title="'+lp.pg+'">'+
-          '<span style="color:#e65c00;font-weight:600;">'+pgShort+'</span>'+
-          '<span>'+fmt(lp.sess)+' sessions</span>'+
-          '<span>'+fmt(lp.users)+' users</span></div>';
-      }).join('');
-    } else {
-      lpCell='<span style="color:#94a3b8;font-size:11px;">No data</span>';
-    }
-    return '<tr>'+
-      '<td class="dc">'+fd(date)+'</td>'+
-      '<td class="num">'+fmt(r[1][0])+'</td>'+
-      '<td class="num">'+fmt(r[1][1])+'</td>'+
-      '<td class="pg">'+pct(r[1][2])+'</td>'+
-      '<td class="'+bc+'">'+pct(r[1][3])+'</td>'+
-      '<td>'+dur(r[1][4])+'</td>'+
-      '<td class="num">'+fmt(r[1][5])+'</td>'+
-      '<td>'+lpCell+'</td>'+
-      '</tr>';
-  }).join('');
+  var html = ['<table class="dtable">',
+    '<thead><tr>',
+    '<th>Date</th><th>Users</th><th>Sessions</th>',
+    '<th>Engagement</th><th>Bounce</th><th>Avg Duration</th>',
+    '<th>Pageviews</th><th>Landing Pages</th>',
+    '</tr></thead>'
+  ];
 
-  document.getElementById('ovTbl').innerHTML=
-    '<table class="dtable"><thead><tr>'+
-    '<th>Date</th><th>Users</th><th>Sessions</th><th>Engagement</th>'+
-    '<th>Bounce</th><th>Avg Duration</th><th>Pageviews</th><th>Top Landing Pages</th>'+
-    '</tr></thead><tbody>'+rows+'</tbody></table>';
+  ov.slice().reverse().forEach(function(r, idx){
+    var date = r[0];
+    var bc = parseFloat(r[1][3]) > 0.7 ? 'pb' : 'pm';
+    var lpPages = lpByDate[date] || [];
+    var lpMaxSess = lpPages.length > 0 ? lpPages[0].sess : 1;
+    var lpCount = lpPages.length;
+
+    // Main date row
+    html.push('<tbody>');
+    html.push('<tr>');
+    html.push('<td class="dc" style="white-space:nowrap;">' + fd(date));
+    if(lpCount > 0){
+      html.push(' <span class="lp-toggle" onclick="toggleRow(' + idx + ')" id="lpbtn' + idx + '">');
+      html.push('+ ' + lpCount + ' pages</span>');
+    }
+    html.push('</td>');
+    html.push('<td class="num">' + fmt(r[1][0]) + '</td>');
+    html.push('<td class="num">' + fmt(r[1][1]) + '</td>');
+    html.push('<td class="pg">' + pct(r[1][2]) + '</td>');
+    html.push('<td class="' + bc + '">' + pct(r[1][3]) + '</td>');
+    html.push('<td>' + dur(r[1][4]) + '</td>');
+    html.push('<td class="num">' + fmt(r[1][5]) + '</td>');
+    html.push('<td style="color:#94a3b8;font-size:11px;">' + (lpCount > 0 ? lpCount + ' pages tracked' : '-') + '</td>');
+    html.push('</tr>');
+    html.push('</tbody>');
+
+    // Expandable landing pages sub-rows
+    if(lpCount > 0){
+      html.push('<tbody id="lprow' + idx + '" style="display:none;background:#fafbfc;">');
+      lpPages.forEach(function(lp, li){
+        var pgShort = lp.pg.length > 45 ? lp.pg.slice(0, 45) + '...' : lp.pg;
+        var barW = lpMaxSess > 0 ? Math.max(3, (lp.sess / lpMaxSess) * 100) : 3;
+        html.push('<tr style="background:#fafbfc;">');
+        html.push('<td style="padding:6px 10px 6px 36px;border-bottom:1px solid #f1f5f9;font-size:11px;" colspan="1">');
+        html.push('<span style="color:#94a3b8;margin-right:6px;">' + (li+1) + '.</span>');
+        html.push('<span style="color:#334155;" title="' + lp.pg + '">' + pgShort + '</span>');
+        html.push('</td>');
+        html.push('<td colspan="3" style="padding:6px 10px;border-bottom:1px solid #f1f5f9;">');
+        html.push('<div style="display:flex;align-items:center;gap:10px;">');
+        html.push('<div style="width:100px;height:5px;background:#e2e8f0;border-radius:3px;flex-shrink:0;">');
+        html.push('<div style="width:' + barW + '%;height:100%;background:#e65c00;border-radius:3px;"></div></div>');
+        html.push('<span style="font-size:11px;font-weight:700;color:#0f172a;">' + fmt(lp.sess) + '</span>');
+        html.push('<span style="font-size:10px;color:#94a3b8;">sessions</span>');
+        html.push('<span style="font-size:11px;color:#475569;">' + fmt(lp.users) + ' users</span>');
+        html.push('</div></td>');
+        html.push('<td colspan="4" style="border-bottom:1px solid #f1f5f9;"></td>');
+        html.push('</tr>');
+      });
+      html.push('</tbody>');
+    }
+  });
+
+  html.push('</table>');
+  document.getElementById('ovTbl').innerHTML = html.join('');
 }
+
+function toggleRow(idx){
+  var el  = document.getElementById('lprow' + idx);
+  var btn = document.getElementById('lpbtn' + idx);
+  if(!el) return;
+  if(el.style.display === 'none'){
+    el.style.display = 'table-row-group';
+    if(btn){ btn.textContent = '- hide'; btn.style.background = '#fff'; btn.style.borderColor = '#e65c00'; }
+  } else {
+    el.style.display = 'none';
+    if(btn){ btn.textContent = '+ ' + el.querySelectorAll('tr').length + ' pages'; btn.style.background = '#fff7f0'; btn.style.borderColor = '#fed7aa'; }
+  }
+}
+
 
 function renderInsights(ov, tr, rg){
   if(!ov||!ov.length){document.getElementById('insPanel').innerHTML='<div class="no-data">No data</div>';return;}
